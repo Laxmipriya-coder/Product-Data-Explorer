@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Navigation {
+  id            Int        @id @default(autoincrement())
+  title         String
+  slug          String     @unique
+  lastScrapedAt DateTime?
+  categories    Category[]
+}
+
+model Product {
+  id             Int             @id @default(autoincrement())
+  name           String
+  category       Category        @relation(fields: [categoryId], references: [id])
+  categoryId     Int
+  productDetails ProductDetail[]
+}
+
+model Category {
+  id           Int        @id @default(autoincrement())
+  name         String
+  navigation   Navigation @relation(fields: [navigationId], references: [id])
+  navigationId Int
+  products     Product[] // ✅ Now connected to Product.category
+}
+
+model ProductDetail {
+  productId    Int    @id
+  description  String
+  specs        Json
+  ratingsAvg   Float?
+  reviewsCount Int?
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  author    String?
+  rating    Int?
+  text      String
+  createdAt DateTime @default(now())
+}
